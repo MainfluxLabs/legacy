@@ -1,0 +1,100 @@
+// Copyright (c) Mainflux
+// SPDX-License-Identifier: Apache-2.0
+
+package readers
+
+import (
+	"context"
+	"errors"
+
+	"github.com/MainfluxLabs/mainflux/pkg/domain"
+)
+
+const (
+	// EqualKey represents the equal comparison operator key.
+	EqualKey = "eq"
+	// LowerThanKey represents the lower-than comparison operator key.
+	LowerThanKey = "lt"
+	// LowerThanEqualKey represents the lower-than-or-equal comparison operator key.
+	LowerThanEqualKey = "le"
+	// GreaterThanKey represents the greater-than-or-equal comparison operator key.
+	GreaterThanKey = "gt"
+	// GreaterThanEqualKey represents the greater-than-or-equal comparison operator key.
+	GreaterThanEqualKey = "ge"
+	// AggregationMin represents the minimum aggregation key.
+	AggregationMin = "min"
+	// AggregationMax represents the maximum aggregation key.
+	AggregationMax = "max"
+	// AggregationAvg represents the average aggregation key.
+	AggregationAvg = "avg"
+	// AggregationCount represents the count aggregation key.
+	AggregationCount = "count"
+)
+
+// Domain type aliases
+type (
+	Message           = domain.Message
+	MessagesPage      = domain.MessagesPage
+	JSONMessagesPage  = domain.JSONMessagesPage
+	SenMLMessagesPage = domain.SenMLMessagesPage
+	JSONPageMetadata  = domain.JSONPageMetadata
+	SenMLPageMetadata = domain.SenMLPageMetadata
+)
+
+// ErrReadMessages indicates failure occurred while reading messages from database.
+var ErrReadMessages = errors.New("failed to read messages from database")
+
+type JSONMessageRepository interface {
+	// Retrieve retrieves the json messages with given filters.
+	Retrieve(ctx context.Context, rpm JSONPageMetadata) (JSONMessagesPage, error)
+
+	// Backup backups the json messages with given filters.
+	Backup(ctx context.Context, rpm JSONPageMetadata) (JSONMessagesPage, error)
+
+	// Restore restores the json messages.
+	Restore(ctx context.Context, messages ...Message) error
+
+	// Remove deletes the json messages within a time range.
+	Remove(ctx context.Context, rpm JSONPageMetadata) error
+}
+
+type SenMLMessageRepository interface {
+	// Retrieve retrieves the senml messages with given filters.
+	Retrieve(ctx context.Context, rpm SenMLPageMetadata) (SenMLMessagesPage, error)
+
+	// Backup backups the senml messages with given filters.
+	Backup(ctx context.Context, rpm SenMLPageMetadata) (SenMLMessagesPage, error)
+
+	// Restore restores the senml messages.
+	Restore(ctx context.Context, messages ...Message) error
+
+	// Remove deletes the senml messages within a time range.
+	Remove(ctx context.Context, rpm SenMLPageMetadata) error
+}
+
+// ComparatorSymbol converts a comparison operator key into its SQL symbol.
+func ComparatorSymbol(key string) string {
+	switch key {
+	case EqualKey:
+		return "="
+	case LowerThanKey:
+		return "<"
+	case LowerThanEqualKey:
+		return "<="
+	case GreaterThanKey:
+		return ">"
+	case GreaterThanEqualKey:
+		return ">="
+	default:
+		return "="
+	}
+}
+
+// ParseValueComparator converts comparison operator keys into mathematical notation.
+func ParseValueComparator(query map[string]any) string {
+	val, ok := query["comparator"]
+	if !ok {
+		return "="
+	}
+	return ComparatorSymbol(val.(string))
+}

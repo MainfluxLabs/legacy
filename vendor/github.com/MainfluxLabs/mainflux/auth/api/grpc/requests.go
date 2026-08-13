@@ -1,0 +1,186 @@
+// Copyright (c) Mainflux
+// SPDX-License-Identifier: Apache-2.0
+
+package grpc
+
+import (
+	"github.com/MainfluxLabs/mainflux/auth"
+	"github.com/MainfluxLabs/mainflux/pkg/apiutil"
+)
+
+type identityReq struct {
+	token string
+	kind  uint32
+}
+
+func (req identityReq) validate() error {
+	if req.token == "" {
+		return apiutil.ErrBearerToken
+	}
+	if req.kind != auth.LoginKey &&
+		req.kind != auth.APIKey &&
+		req.kind != auth.RecoveryKey {
+		return apiutil.ErrInvalidAuthKey
+	}
+
+	return nil
+}
+
+type issueReq struct {
+	id      string
+	email   string
+	keyType uint32
+}
+
+func (req issueReq) validate() error {
+	if req.email == "" {
+		return apiutil.ErrMissingEmail
+	}
+	if req.keyType != auth.LoginKey &&
+		req.keyType != auth.APIKey &&
+		req.keyType != auth.RecoveryKey {
+		return apiutil.ErrInvalidAuthKey
+	}
+
+	return nil
+}
+
+type authReq struct {
+	Token   string
+	Object  string
+	Subject string
+	Action  string
+}
+
+func (req authReq) validate() error {
+	if req.Token == "" {
+		return apiutil.ErrBearerToken
+	}
+
+	if req.Subject != auth.RootSub &&
+		req.Subject != auth.OrgSub {
+		return apiutil.ErrInvalidSubject
+	}
+
+	return nil
+}
+
+type ownerIDByOrgReq struct {
+	orgID string
+}
+
+func (req ownerIDByOrgReq) validate() error {
+	if req.orgID == "" {
+		return apiutil.ErrMissingOrgID
+	}
+
+	return nil
+}
+
+type assignRoleReq struct {
+	ID   string
+	Role string
+}
+
+func (req assignRoleReq) validate() error {
+	if req.Role == "" {
+		return apiutil.ErrMissingRole
+	}
+
+	if req.ID == "" {
+		return apiutil.ErrMissingOrgID
+	}
+
+	return nil
+}
+
+type retrieveRoleReq struct {
+	id string
+}
+
+func (req retrieveRoleReq) validate() error {
+	if req.id == "" {
+		return apiutil.ErrMissingUserID
+	}
+
+	return nil
+}
+
+type createDormantOrgInviteReq struct {
+	token            string
+	orgID            string
+	inviteeRole      string
+	groupInvites     []auth.GroupInvite
+	platformInviteID string
+}
+
+func (req createDormantOrgInviteReq) validate() error {
+	if req.token == "" {
+		return apiutil.ErrBearerToken
+	}
+
+	if req.orgID == "" {
+		return apiutil.ErrMissingOrgID
+	}
+
+	if req.inviteeRole == "" {
+		return apiutil.ErrMissingRole
+	}
+
+	if req.platformInviteID == "" {
+		return apiutil.ErrMissingInviteID
+	}
+
+	return nil
+}
+
+type activateOrgInviteReq struct {
+	platformInviteID string
+	userID           string
+	redirectPath     string
+}
+
+func (req activateOrgInviteReq) validate() error {
+	if req.platformInviteID == "" {
+		return apiutil.ErrMissingInviteID
+	}
+
+	if req.userID == "" {
+		return apiutil.ErrMissingUserID
+	}
+
+	if req.redirectPath == "" {
+		return apiutil.ErrMissingRedirectPath
+	}
+
+	return nil
+}
+
+type getDormantOrgInviteByPlatformInviteReq struct {
+	platformInviteID string
+}
+
+func (req getDormantOrgInviteByPlatformInviteReq) validate() error {
+	if req.platformInviteID == "" {
+		return apiutil.ErrMissingInviteID
+	}
+
+	return nil
+}
+
+type viewOrgReq struct {
+	token string
+	id    string
+}
+
+func (req viewOrgReq) validate() error {
+	if req.token == "" {
+		return apiutil.ErrBearerToken
+	}
+
+	if req.id == "" {
+		return apiutil.ErrMissingOrgID
+	}
+
+	return nil
+}
